@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.velocity = new Vector2(dashForce, rb.velocity.y);
         }
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             rb.velocity = new Vector2(-dashForce, rb.velocity.y);
         }
