@@ -9,14 +9,15 @@ TagManager:
   - Climbable Right Wall
   - Wall
   - Enemy
+  - Kill Barrier
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Slime
   - Water
   - UI
-  - 
+  - Enemy
   - 
   - 
   - 
