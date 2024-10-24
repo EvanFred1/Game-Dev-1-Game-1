@@ -7,13 +7,16 @@ public class PlayerController : MonoBehaviour
 {
     public GameObject slime;
     public Rigidbody2D rb;
-    
-
-    private bool isGrounded;
+    public GameObject endScreen;
+    public GameObject winScreen;
+    public bool isGrounded;
     private int speed = 3;
-    private float jumpForce =7.0f;
+    private float jumpForce =9.0f;
+    private float jumpTime = 1f;
+    
     private float dashForce = 10.0f;
     private float dashTime = .5f;
+   
     public int health = 3;
     private bool isInvinicble = false;
     private float invinicblityTimer = 0;
@@ -29,19 +32,13 @@ public class PlayerController : MonoBehaviour
         dashLeft,
         climbRight,
         climbLeft
-     
-
     }
     private States state = States.idle;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void Update()
     {
+
         switch (state)
         {
             case States.move:
@@ -78,15 +75,13 @@ public class PlayerController : MonoBehaviour
         {
             GameOver();
         }
-
-     
-      
-   
+        Debug.Log(state);
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
         {
+            //Debug.Log("Grounded");
             isGrounded = true;
             Animator animator = GetComponent<Animator>();
             animator.SetBool("Jump", false);
@@ -94,7 +89,6 @@ public class PlayerController : MonoBehaviour
         }
         if (collision.gameObject.CompareTag("Climbable Wall"))
         {
-           
             state = States.climbLeft;
             transform.Rotate(0, 0, 90);
         }
@@ -120,7 +114,6 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = false;
-           
         }
         if (collision.gameObject.CompareTag("Climbable Wall"))
         {
@@ -132,7 +125,6 @@ public class PlayerController : MonoBehaviour
             transform.Rotate(0, 0, 90);
             state = States.move;
         }
-
     }
     private void dashRight()
     {
@@ -157,7 +149,6 @@ public class PlayerController : MonoBehaviour
         {
             invinicblityTimer -= Time.deltaTime;
         }
-
     }
     private void dashLeft()
     {
@@ -185,8 +176,17 @@ public class PlayerController : MonoBehaviour
     }
     private void moveState()
     {
-        Debug.Log("Move");
+        //Debug.Log("Move");
+        Animator animator = GetComponent<Animator>();
+        animator.SetBool("Idle", false);
+
+        animator.SetBool("Climb", false);
         rb.gravityScale = 1;
+        if (isGrounded)
+        {
+            animator.SetBool("Walk", true);
+        }
+        
         if (Input.GetKey(KeyCode.D))
         {
             //transform.Translate(Vector3.right * Time.deltaTime * speed);
@@ -201,10 +201,8 @@ public class PlayerController : MonoBehaviour
         if (isGrounded && Input.GetKeyDown(KeyCode.Space))
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            Animator animator = GetComponent<Animator>();
-            animator.SetBool("Jump", true);
+            StartCoroutine(Jump());
         }
-
         if (rb.velocity == Vector2.zero)
         {
             state = States.idle;
@@ -221,7 +219,11 @@ public class PlayerController : MonoBehaviour
     private void idleState()
     {
         rb.gravityScale = 1;
-        Debug.Log("Idle");
+        Animator animator = GetComponent<Animator>();
+        animator.SetBool("Idle", true);
+        animator.SetBool("Climb", false);
+        //Debug.Log("Idle");
+        animator.SetBool("Walk", false);
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A))
         {
             state = States.move;
@@ -234,9 +236,24 @@ public class PlayerController : MonoBehaviour
         {
             state = States.dashLeft;
         }
+        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            StartCoroutine(Jump());
+        }
+    }
+    public IEnumerator Jump()
+    {
+        Animator animator = GetComponent<Animator>();
+        yield return new WaitForSeconds(.05f);
+        animator.SetBool("Walk", false );
+        animator.SetBool("Jump", true);
     }
     private void climbLeftState()
     {
+        Animator animator = GetComponent<Animator>();
+        animator.SetBool("Walk", false);
+        animator.SetBool("Climb", true);
         rb.gravityScale = 0;
         rb.velocity = Vector3.zero;
         if (Input.GetKey(KeyCode.D))
@@ -255,6 +272,9 @@ public class PlayerController : MonoBehaviour
     }
     private void climbRightState()
     {
+        Animator animator = GetComponent<Animator>();
+        animator.SetBool("Walk", false);
+        animator.SetBool("Climb", true);
         rb.gravityScale = 0;
         rb.velocity = Vector3.zero;
         if (Input.GetKey(KeyCode.D))
@@ -271,6 +291,7 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
     }
+  
     
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -278,16 +299,21 @@ public class PlayerController : MonoBehaviour
         {
             GameOver();
         }
-       
+        if (collision.gameObject.CompareTag("Win"))
+        {
+            winScreen.SetActive(true);
+        }
     }
     private void GameOver()
     {
         Destroy(slime);
+        endScreen.SetActive(true);
     }
     private void OnCollisionStay2D(Collision2D collision)
     {
         if(collision.gameObject.CompareTag("Ground"))
         {
+            //Debug.Log("Grounded");
             isGrounded = true;
             Animator animator = GetComponent<Animator>();
             animator.SetBool("Jump", false);

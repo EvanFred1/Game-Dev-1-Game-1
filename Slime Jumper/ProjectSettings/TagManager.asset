@@ -10,6 +10,7 @@ TagManager:
   - Wall
   - Enemy
   - Kill Barrier
+  - Win
   layers:
   - Default
   - TransparentFX
